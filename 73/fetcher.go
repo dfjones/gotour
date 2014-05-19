@@ -2,6 +2,8 @@ package main
 
 import (
     "fmt"
+    "math/rand"
+    "time"
 )
 
 type Fetcher interface {
@@ -19,10 +21,39 @@ type fakeResult struct {
 }
 
 func (f fakeFetcher) Fetch(url string) (string, []string, error) {
+    time.Sleep(100 * time.Millisecond)
     if res, ok := f[url]; ok {
         return res.body, res.urls, nil
     }
     return "", nil, fmt.Errorf("not found: %s", url)
+}
+
+func NewFakeFetcher(results, minLinks, maxLinks int) (Fetcher) {
+  ff := make(fakeFetcher)
+  for i := 0; i < results; i++ {
+    body := fmt.Sprint(i)
+    ff[body] = &fakeResult{body, []string{}}
+  }
+  urls := make([]string, results)
+  i := 0
+  for key, _ := range ff {
+    urls[i] = key
+    i++
+  }
+  for key, _ := range ff {
+    numLinks := rand.Intn(maxLinks - minLinks)
+    numLinks += minLinks
+    for l := 0; l < numLinks; l++ {
+      link := key
+      for link == key {
+        i := rand.Intn(len(urls))
+        link = urls[i]
+      }
+      fr := ff[key]
+      fr.urls = append(fr.urls, link)
+    }
+  }
+  return ff
 }
 
 // fetcher is a populated fakeFetcher.
