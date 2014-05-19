@@ -4,12 +4,6 @@ import (
     "fmt"
 )
 
-type Fetcher interface {
-    // Fetch returns the body of URL and
-    // a slice of URLs found on that page.
-    Fetch(url string) (body string, urls []string, err error)
-}
-
 type visitMap map[string]bool
 
 // Crawl uses fetcher to recursively crawl
@@ -17,15 +11,15 @@ type visitMap map[string]bool
 
 func SerialCrawl(url string, depth int, fetcher Fetcher) (map[string]bool) {
   vm := make(visitMap)
-  crawl(url, depth, fetcher, vm)
+  serialcrawl(url, depth, fetcher, vm)
   return vm
 }
 
-func crawl(url string, depth int, fetcher Fetcher, visited visitMap) {
+func serialcrawl(url string, depth int, fetcher Fetcher, visited visitMap) {
     if depth <= 0 {
         return
     }
-    if found, ok := visitMap[url]; ok {
+    if _, ok := visited[url]; ok {
       return
     }
     body, urls, err := fetcher.Fetch(url)
@@ -35,11 +29,7 @@ func crawl(url string, depth int, fetcher Fetcher, visited visitMap) {
     }
     fmt.Printf("found: %s %q\n", url, body)
     for _, u := range urls {
-        Crawl(u, depth-1, fetcher)
+        serialcrawl(u, depth-1, fetcher, visited)
     }
     return
-}
-
-func main() {
-    SerialCrawl("http://golang.org/", 4, FakeFetcher)
 }
