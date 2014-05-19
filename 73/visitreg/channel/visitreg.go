@@ -1,5 +1,11 @@
 package channel
 
+func New() VisitRegister {
+  vm := make(visitMap)
+  go vm.run()
+  return vm
+}
+
 type VisitRegister interface {
   Visit(string)
   IsVisited(string) bool
@@ -22,12 +28,6 @@ const (
   has
   end
 )
-
-func NewVisitRegister() VisitRegister {
-  vm := make(visitMap)
-  go vm.run()
-  return vm
-}
 
 func (vm visitMap) run() {
   store := make(map[string]bool)

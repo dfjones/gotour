@@ -8,7 +8,7 @@ import (
 )
 
 func Crawl(url string, depth int, fetcher Fetcher) (map[string]bool){
-  visitRegister := channel.NewVisitRegister()
+  visitRegister := channel.New()
   done := make(chan struct{})
   go crawl(done, url, depth, visitRegister, fetcher)
   <-done
