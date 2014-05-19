@@ -41,5 +41,5 @@ func crawl(url string, depth int, fetcher Fetcher, visited visitMap) {
 }
 
 func main() {
-    SerialCrawl("http://golang.org/", 4, fetcher)
+    SerialCrawl("http://golang.org/", 4, FakeFetcher)
 }
