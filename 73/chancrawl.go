@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "runtime"
+    "github.com/dfjones/tour/73/visitreg"
     "github.com/dfjones/tour/73/visitreg/channel"
 )
 
@@ -16,7 +17,7 @@ func Crawl(url string, depth int, fetcher Fetcher) (map[string]bool){
 
 // Crawl uses fetcher to recursively crawl
 // pages starting with url, to a maximum of depth.
-func crawl(done chan<- struct{}, url string, depth int, visitRegister channel.VisitRegister, fetcher Fetcher) {
+func crawl(done chan<- struct{}, url string, depth int, visitRegister visitreg.VisitRegister, fetcher Fetcher) {
     // Done: Fetch URLs in parallel.
     // Done: Don't fetch the same URL twice.
     // This implementation doesn't do either:
