@@ -8,15 +8,17 @@ import (
   "runtime"
 )
 
+// ChanCrawl begins a crawl operation using the channel based visited map
 func ChanCrawl(url string, depth int, fetcher Fetcher) map[string]bool {
-  return StartCrawl(url, depth, channel.New(), fetcher)
+  return startCrawl(url, depth, channel.New(), fetcher)
 }
 
+// MutexCrawl begins a crawl operation using the mutex based visited map
 func MutexCrawl(url string, depth int, fetcher Fetcher) map[string]bool {
-  return StartCrawl(url, depth, mutex.New(), fetcher)
+  return startCrawl(url, depth, mutex.New(), fetcher)
 }
 
-func StartCrawl(url string, depth int, visitRegister visitreg.VisitRegister, fetcher Fetcher) map[string]bool {
+func startCrawl(url string, depth int, visitRegister visitreg.VisitRegister, fetcher Fetcher) map[string]bool {
   done := make(chan struct{})
   go chancrawl(done, url, depth, visitRegister, fetcher)
   <-done
