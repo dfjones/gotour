@@ -4,10 +4,11 @@ import (
   "fmt"
   "reflect"
   "runtime"
+  "sort"
   "testing"
 )
 
-var depth = 8
+var depth = 6
 var graphSize = 100000
 var graph Fetcher
 var smallGraph Fetcher
@@ -27,29 +28,45 @@ func TestCrawlEquiv(t *testing.T) {
   v2 := ChanCrawl("0", depth, smallGraph)
   v3 := MutexCrawl("0", depth, smallGraph)
 
-  if !reflect.DeepEqual(v1, v2) {
+  if !mapKeysEqual(v1, v2) {
     t.Errorf("%v != %v", v1, v2)
   }
 
-  if !reflect.DeepEqual(v1, v3) {
+  if !mapKeysEqual(v1, v3) {
     t.Errorf("%v != %v", v1, v3)
   }
 }
 
+func mapKeysEqual(v1, v2 visitMap) bool {
+  k1 := keys(v1)
+  k2 := keys(v2)
+  sort.Strings(k1)
+  sort.Strings(k2)
+  return reflect.DeepEqual(k1, k2)
+}
+
+func keys(m visitMap) []string {
+  keys := []string{}
+  for k := range m {
+    keys = append(keys, k)
+  }
+  return keys
+}
+
 func BenchmarkSerialCrawl(b *testing.B) {
-  visited := SerialCrawl("0", depth, graph)
-  b.StopTimer()
-  b.Log("Benchmark finished. Visited: ", len(visited))
+  for i := 0; i < b.N; i++ {
+    SerialCrawl("0", depth, graph)
+  }
 }
 
 func BenchmarkRecursiveChanCrawl(b *testing.B) {
-  visited := ChanCrawl("0", depth, graph)
-  b.StopTimer()
-  b.Log("Benchmark finished. Visited: ", len(visited))
+  for i := 0; i < b.N; i++ {
+    ChanCrawl("0", depth, graph)
+  }
 }
 
 func BenchmarkRecursiveMutexCrawl(b *testing.B) {
-  visited := MutexCrawl("0", depth, graph)
-  b.StopTimer()
-  b.Log("Benchmark finished. Visited: ", len(visited))
+  for i := 0; i < b.N; i++ {
+    MutexCrawl("0", depth, graph)
+  }
 }
