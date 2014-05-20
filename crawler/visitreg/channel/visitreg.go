@@ -1,15 +1,9 @@
 package channel
 
-func New() VisitRegister {
+func New() visitMap {
   vm := make(visitMap)
   go vm.run()
   return vm
-}
-
-type VisitRegister interface {
-  Visit(string)
-  IsVisited(string) bool
-  Close() map[string]bool
 }
 
 type visitMap chan visitData

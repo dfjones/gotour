@@ -5,10 +5,18 @@ import (
     "runtime"
     "github.com/dfjones/tour/crawler/visitreg"
     "github.com/dfjones/tour/crawler/visitreg/channel"
+    "github.com/dfjones/tour/crawler/visitreg/mutex"
 )
 
-func ChanCrawl(url string, depth int, fetcher Fetcher) (map[string]bool){
-  visitRegister := channel.New()
+func ChanCrawl(url string, depth int, fetcher Fetcher) map[string]bool {
+  return StartCrawl(url, depth, channel.New(), fetcher)
+}
+
+func MutexCrawl(url string, depth int, fetcher Fetcher) map[string]bool {
+  return StartCrawl(url, depth, mutex.New(), fetcher)
+}
+
+func StartCrawl(url string, depth int, visitRegister visitreg.VisitRegister, fetcher Fetcher) map[string]bool {
   done := make(chan struct{})
   go chancrawl(done, url, depth, visitRegister, fetcher)
   <-done

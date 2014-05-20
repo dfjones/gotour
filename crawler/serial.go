@@ -22,12 +22,12 @@ func serialcrawl(url string, depth int, fetcher Fetcher, visited visitMap) {
     if _, ok := visited[url]; ok {
       return
     }
-    body, urls, err := fetcher.Fetch(url)
+    _, urls, err := fetcher.Fetch(url)
     if err != nil {
         fmt.Println(err)
         return
     }
-    fmt.Printf("found: %s %q\n", url, body)
+    //fmt.Printf("found: %s %q\n", url, body)
     for _, u := range urls {
         serialcrawl(u, depth-1, fetcher, visited)
     }
