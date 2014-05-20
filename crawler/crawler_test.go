@@ -13,6 +13,8 @@ var graphSize = 100000
 var graph Fetcher
 var smallGraph Fetcher
 
+type crawlFunc func(url string, depth int, fetcher Fetcher) map[string]bool
+
 func init() {
   numCpus := runtime.NumCPU()
   runtime.GOMAXPROCS(runtime.NumCPU())
@@ -24,25 +26,29 @@ func init() {
 
 func TestCrawlEquiv(t *testing.T) {
   depth := 3
-  v1 := SerialCrawl("0", depth, smallGraph)
-  v2 := ChanCrawl("0", depth, smallGraph)
-  v3 := MutexCrawl("0", depth, smallGraph)
-
-  if !mapKeysEqual(v1, v2) {
-    t.Errorf("%v != %v", v1, v2)
+  vms := []visitMap{}
+  funcs := []crawlFunc{SerialCrawl, ChanCrawl, MutexCrawl,
+    ChanRoutineCrawl, MutexRoutineCrawl}
+  for _, f := range funcs {
+    res := f("0", depth, smallGraph)
+    vms = append(vms, res)
   }
 
-  if !mapKeysEqual(v1, v3) {
-    t.Errorf("%v != %v", v1, v3)
-  }
+  assertMapsEqual(t, vms)
 }
 
-func mapKeysEqual(v1, v2 visitMap) bool {
+func assertMapsEqual(t *testing.T, vms []visitMap) {
+  v1 := vms[0]
   k1 := keys(v1)
-  k2 := keys(v2)
   sort.Strings(k1)
-  sort.Strings(k2)
-  return reflect.DeepEqual(k1, k2)
+
+  for _, v2 := range vms[1:] {
+    k2 := keys(v2)
+    sort.Strings(k2)
+    if !reflect.DeepEqual(k1, k2) {
+      t.Errorf("%v != %v", k1, k2)
+    }
+  }
 }
 
 func keys(m visitMap) []string {
@@ -54,19 +60,29 @@ func keys(m visitMap) []string {
 }
 
 func BenchmarkSerialCrawl(b *testing.B) {
-  for i := 0; i < b.N; i++ {
-    SerialCrawl("0", depth, graph)
-  }
+  bench(b, SerialCrawl)
 }
 
 func BenchmarkRecursiveChanCrawl(b *testing.B) {
-  for i := 0; i < b.N; i++ {
-    ChanCrawl("0", depth, graph)
-  }
+  bench(b, ChanCrawl)
 }
 
 func BenchmarkRecursiveMutexCrawl(b *testing.B) {
+  bench(b, MutexCrawl)
+}
+
+func BenchmarkChanRoutineCrawl(b *testing.B) {
+  bench(b, ChanRoutineCrawl)
+}
+
+func BenchmarkMutexRoutineCrawl(b *testing.B) {
+  bench(b, MutexRoutineCrawl)
+}
+
+func bench(b *testing.B, f crawlFunc) {
+  var size = 0
   for i := 0; i < b.N; i++ {
-    MutexCrawl("0", depth, graph)
+    size = len(f("0", depth, graph))
   }
+  b.Log("Benchmark finished, visited: ", size)
 }
