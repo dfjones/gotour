@@ -2,9 +2,9 @@ package main
 
 import (
   "fmt"
-  "github.com/dfjones/tour/crawler/visitreg"
-  "github.com/dfjones/tour/crawler/visitreg/channel"
-  "github.com/dfjones/tour/crawler/visitreg/mutex"
+  "github.com/dfjones/gotour/crawler/visitreg"
+  "github.com/dfjones/gotour/crawler/visitreg/channel"
+  "github.com/dfjones/gotour/crawler/visitreg/mutex"
   "runtime"
 )
 
