@@ -1,7 +1,8 @@
-package main
+package serial
 
 import (
   "fmt"
+  "github.com/dfjones/gotour/crawler"
 )
 
 type visitMap map[string]bool
@@ -10,13 +11,13 @@ type visitMap map[string]bool
 // pages starting with url, to a maximum of depth.
 
 // SerialCrawl performs the crawl operation with no concurrency
-func SerialCrawl(url string, depth int, fetcher Fetcher) map[string]bool {
+func Crawl(url string, depth int, fetcher crawler.Fetcher) map[string]bool {
   vm := make(visitMap)
   serialcrawl(url, depth, fetcher, vm)
   return vm
 }
 
-func serialcrawl(url string, depth int, fetcher Fetcher, visited visitMap) {
+func serialcrawl(url string, depth int, fetcher crawler.Fetcher, visited visitMap) {
   if depth <= 0 {
     return
   }

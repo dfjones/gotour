@@ -1,7 +1,11 @@
-package main
+package test
 
 import (
   "fmt"
+  "github.com/dfjones/gotour/crawler"
+  "github.com/dfjones/gotour/crawler/concurrent/graph"
+  "github.com/dfjones/gotour/crawler/concurrent/recursive"
+  "github.com/dfjones/gotour/crawler/serial"
   "reflect"
   "runtime"
   "sort"
@@ -10,25 +14,23 @@ import (
 
 var depth = 6
 var graphSize = 100000
-var graph Fetcher
-var smallGraph Fetcher
-
-type crawlFunc func(url string, depth int, fetcher Fetcher) map[string]bool
+var largeGraph crawler.Fetcher
+var smallGraph crawler.Fetcher
 
 func init() {
   numCpus := runtime.NumCPU()
   runtime.GOMAXPROCS(runtime.NumCPU())
   fmt.Println("Running using num cpus: ", numCpus)
-  smallGraph = NewFakeFetcher(100, 1, 5)
-  graph = NewFakeFetcher(graphSize, 1, 10)
+  smallGraph = crawler.NewFakeFetcher(100, 1, 5)
+  largeGraph = crawler.NewFakeFetcher(graphSize, 1, 10)
   fmt.Println("Graph built size: ", graphSize)
 }
 
 func TestCrawlEquiv(t *testing.T) {
   depth := 3
-  vms := []visitMap{}
-  funcs := []crawlFunc{SerialCrawl, ChanCrawl, MutexCrawl,
-    ChanRoutineCrawl, MutexRoutineCrawl}
+  vms := []crawler.VisitMap{}
+  funcs := []crawler.CrawlFunc{
+    serial.Crawl, graph.ChanCrawl, graph.MutexCrawl, recursive.ChanCrawl, recursive.MutexCrawl}
   for _, f := range funcs {
     res := f("0", depth, smallGraph)
     vms = append(vms, res)
@@ -37,7 +39,7 @@ func TestCrawlEquiv(t *testing.T) {
   assertMapsEqual(t, vms)
 }
 
-func assertMapsEqual(t *testing.T, vms []visitMap) {
+func assertMapsEqual(t *testing.T, vms []crawler.VisitMap) {
   v1 := vms[0]
   k1 := keys(v1)
   sort.Strings(k1)
@@ -51,7 +53,7 @@ func assertMapsEqual(t *testing.T, vms []visitMap) {
   }
 }
 
-func keys(m visitMap) []string {
+func keys(m crawler.VisitMap) []string {
   keys := []string{}
   for k := range m {
     keys = append(keys, k)
@@ -60,29 +62,29 @@ func keys(m visitMap) []string {
 }
 
 func BenchmarkSerialCrawl(b *testing.B) {
-  bench(b, SerialCrawl)
+  bench(b, serial.Crawl)
 }
 
 func BenchmarkRecursiveChanCrawl(b *testing.B) {
-  bench(b, ChanCrawl)
+  bench(b, recursive.ChanCrawl)
 }
 
 func BenchmarkRecursiveMutexCrawl(b *testing.B) {
-  bench(b, MutexCrawl)
+  bench(b, recursive.MutexCrawl)
 }
 
-func BenchmarkChanRoutineCrawl(b *testing.B) {
-  bench(b, ChanRoutineCrawl)
+func BenchmarkChanGraphCrawl(b *testing.B) {
+  bench(b, graph.ChanCrawl)
 }
 
-func BenchmarkMutexRoutineCrawl(b *testing.B) {
-  bench(b, MutexRoutineCrawl)
+func BenchmarkMutexGraphCrawl(b *testing.B) {
+  bench(b, graph.MutexCrawl)
 }
 
-func bench(b *testing.B, f crawlFunc) {
+func bench(b *testing.B, f crawler.CrawlFunc) {
   var size = 0
   for i := 0; i < b.N; i++ {
-    size = len(f("0", depth, graph))
+    size = len(f("0", depth, largeGraph))
   }
   b.Log("Benchmark finished, visited: ", size)
 }
