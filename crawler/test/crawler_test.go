@@ -82,9 +82,10 @@ func BenchmarkMutexGraphCrawl(b *testing.B) {
 }
 
 func bench(b *testing.B, f crawler.CrawlFunc) {
-  var size = 0
+  //var size = 0
   for i := 0; i < b.N; i++ {
-    size = len(f("0", depth, largeGraph))
+    //size = len(f("0", depth, largeGraph))
+    f("0", depth, largeGraph)
   }
-  b.Log("Benchmark finished, visited: ", size)
+  //b.Log("Benchmark finished, visited: ", size)
 }
