@@ -13,11 +13,11 @@ type visitMap map[string]bool
 // SerialCrawl performs the crawl operation with no concurrency
 func Crawl(url string, depth int, fetcher crawler.Fetcher) map[string]bool {
   vm := make(visitMap)
-  serialcrawl(url, depth, fetcher, vm)
+  crawl(url, depth, fetcher, vm)
   return vm
 }
 
-func serialcrawl(url string, depth int, fetcher crawler.Fetcher, visited visitMap) {
+func crawl(url string, depth int, fetcher crawler.Fetcher, visited visitMap) {
   if depth <= 0 {
     return
   }
@@ -32,7 +32,7 @@ func serialcrawl(url string, depth int, fetcher crawler.Fetcher, visited visitMa
   }
   //fmt.Printf("found: %s %q\n", url, body)
   for _, u := range urls {
-    serialcrawl(u, depth-1, fetcher, visited)
+    crawl(u, depth-1, fetcher, visited)
   }
   return
 }
