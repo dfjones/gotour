@@ -28,9 +28,6 @@ func startCrawl(url string, depth int, visitRegister visitreg.VisitRegister, fet
 // Crawl uses fetcher to recursively crawl
 // pages starting with url, to a maximum of depth.
 func crawl(done chan<- struct{}, url string, depth int, visitRegister visitreg.VisitRegister, fetcher crawler.Fetcher) {
-  // Done: Fetch URLs in parallel.
-  // Done: Don't fetch the same URL twice.
-  // This implementation doesn't do either:
   defer func() {
     done <- struct{}{}
   }()
