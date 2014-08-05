@@ -5,6 +5,7 @@ import (
   "github.com/dfjones/gotour/crawler"
   "github.com/dfjones/gotour/crawler/concurrent/graph"
   "github.com/dfjones/gotour/crawler/concurrent/recursive"
+  "github.com/dfjones/gotour/crawler/concurrent/pool"
   "github.com/dfjones/gotour/crawler/serial"
   "reflect"
   "runtime"
@@ -30,7 +31,14 @@ func TestCrawlEquiv(t *testing.T) {
   depth := 3
   vms := []crawler.VisitMap{}
   funcs := []crawler.CrawlFunc{
-    serial.Crawl, graph.ChanCrawl, graph.MutexCrawl, recursive.ChanCrawl, recursive.MutexCrawl}
+    serial.Crawl, 
+    graph.ChanCrawl, 
+    graph.MutexCrawl, 
+    recursive.ChanCrawl, 
+    recursive.MutexCrawl,
+    pool.ChanCrawl,
+    pool.MutexCrawl,
+  }
   for _, f := range funcs {
     res := f("0", depth, smallGraph)
     vms = append(vms, res)
@@ -79,6 +87,14 @@ func BenchmarkChanGraphCrawl(b *testing.B) {
 
 func BenchmarkMutexGraphCrawl(b *testing.B) {
   bench(b, graph.MutexCrawl)
+}
+
+func BenchmarkMutexPoolCrawl(b *testing.B) {
+  bench(b, pool.MutexCrawl)
+}
+
+func BenchmarkChanPoolCrawl(b *testing.B) {
+  bench(b, pool.ChanCrawl)
 }
 
 func bench(b *testing.B, f crawler.CrawlFunc) {
